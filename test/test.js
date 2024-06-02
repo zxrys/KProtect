@@ -37,13 +37,13 @@ caseDirs.forEach(caseDir => {
         const expected = require(expectPath);
 
         test(`Test case: ${path.basename(caseDir)}`, () => {
-            // 原始代码运行时间统计
+            // original code run time
             console.time('Original Code Execution Time');
             const originalCode = require(codePath);
             const originalResults = cases.map(v => originalCode(...v));
             console.timeEnd('Original Code Execution Time');
 
-            // 编译后代码运行时间统计
+            // vm code run time
             const fn = makeVM(codePath, outputPath);
             console.time('VM Code Execution Time');
             const vmResults = cases.map(v => fn(...v));
