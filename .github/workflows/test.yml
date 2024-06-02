@@ -14,5 +14,5 @@ jobs:
         run: yarn install
       - name: Build
         run: yarn build
-      - name: Run unit test
+      - name: Run unit __tests__
         run: yarn unit

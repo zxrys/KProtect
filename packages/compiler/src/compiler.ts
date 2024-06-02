@@ -986,7 +986,7 @@ export default class Compiler {
   }
 
   private translateForLoop(node: babel.types.ForStatement) {
-    // init => begin => test = true => body => update => begin
+    // init => begin => __tests__ = true => body => update => begin
     //                   ||
     //                  false
     //                   ||
@@ -1008,7 +1008,7 @@ export default class Compiler {
 
     this.appendStubInstruction(this.createAddrStubArgument(stub_begin))
 
-    // node.test != true => jump to stub_end
+    // node.__tests__ != true => jump to stub_end
     this.appendPushInstruction(this.translateExpression(node.test))
     this.appendPushInstruction(this.createAddrStubArgument(stub_end))
     this.appendJmpZeroInstruction()
@@ -1044,12 +1044,12 @@ export default class Compiler {
    * @private
    */
   private translateIfStatement(node: babel.types.IfStatement) {
-    this.appendPushInstruction(this.translateExpression(node.test)) // push result of 'test' onto the stack
+    this.appendPushInstruction(this.translateExpression(node.test)) // push result of '__tests__' onto the stack
 
     if (!node.alternate) { // if there is no 'else' block
       const stub = this.makeStub(StubType.CONDITION_END)
       this.appendPushInstruction(this.createAddrStubArgument(stub)) // push the address of the end of the condition onto the stack
-      this.appendJmpZeroInstruction() // jump to the end of the condition if the test is false
+      this.appendJmpZeroInstruction() // jump to the end of the condition if the __tests__ is false
       // or else, build the consequent
       if (node.consequent.type === 'BlockStatement') {
         this.buildIR(node.consequent.body)
@@ -1066,7 +1066,7 @@ export default class Compiler {
       this.buildIR(node.consequent.type === 'BlockStatement' ? node.consequent.body : [node.consequent])
 
       this.appendPushInstruction(this.createAddrStubArgument(stub_end))
-      this.appendJmpInstruction() // jump to the end of the condition if the test is false
+      this.appendJmpInstruction() // jump to the end of the condition if the __tests__ is false
       this.appendStubInstruction(this.createAddrStubArgument(stub_else))
 
       this.buildIR(node.alternate.type === 'BlockStatement' ? node.alternate.body : [node.alternate])
