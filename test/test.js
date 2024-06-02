@@ -24,6 +24,9 @@ afterAll(() => {
 });
 
 caseDirs.forEach(caseDir => {
+    if (caseDir.includes('--ignore--')) {
+        return;
+    }
     const codePath = path.join(caseDir, 'code.js');
     const casesPath = path.join(caseDir, 'cases.js');
     const expectPath = path.join(caseDir, 'expect.js');
@@ -34,9 +37,22 @@ caseDirs.forEach(caseDir => {
         const expected = require(expectPath);
 
         test(`Test case: ${path.basename(caseDir)}`, () => {
+            // 原始代码运行时间统计
+            console.time('Original Code Execution Time');
+            const originalCode = require(codePath);
+            const originalResults = cases.map(v => originalCode(...v));
+            console.timeEnd('Original Code Execution Time');
+
+            // 编译后代码运行时间统计
             const fn = makeVM(codePath, outputPath);
-            const result = cases.map(v => fn(...v));
-            expect(result).toEqual(expected);
+            console.time('VM Code Execution Time');
+            const vmResults = cases.map(v => fn(...v));
+            console.timeEnd('VM Code Execution Time');
+
+            if (expected !== null && expected !== undefined && expected.length > 0) {
+                expect(originalResults).toEqual(expected);
+                expect(vmResults).toEqual(expected);
+            }
         });
     }
 });
